@@ -1,0 +1,35 @@
+extends model user {
+  displayname     String @unique
+  username        String @unique
+  mail            String @unique
+  password        String
+  dateJoined      DateTime? @default(now()) @map("date_joined")
+  isAdmin         Boolean @default(false) @map("is_admin")
+  isTester        Boolean @default(false) @map("is_tester")
+  devices         device[]
+  auth            auth?
+  reset           reset?
+}
+
+model device {
+  id              Int @id @default(autoincrement())
+  endpoint        String @unique
+  p256dh          String
+  auth            String
+  userId          Int @map("user_id")
+  user            user @relation(fields: [userId], references: [id])
+}
+
+model auth {
+  token           String @id
+  userId          Int @unique @map("user_id")
+  user            user @relation(fields: [userId], references: [id])
+  dateCreated     DateTime? @default(now()) @map("date_created")
+}
+
+model reset {
+  token           String @id
+  userId          Int @map("user_id") @unique
+  user            user @relation(fields: [userId], references: [id])
+  dateCreated     DateTime? @default(now()) @map("date_created")
+}
