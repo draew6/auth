@@ -69,7 +69,8 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
                 secure: cookies.secure,
                 sameSite: "none",
                 maxAge: 60 * 60 * 24 * 360,
-                signed: true
+                signed: true,
+                domain: cookies.domain
             })
 
             return { access_token, "token_type": "bearer", "userId": user.id }

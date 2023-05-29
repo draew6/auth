@@ -67,7 +67,8 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
             secure: cookies.secure,
             sameSite: "none",
             maxAge: 60 * 60 * 24 * 360,
-            signed: true
+            signed: true,
+            domain: cookies.domain
         });
         return { access_token, "token_type": "bearer", "userId": user.id };
     }));

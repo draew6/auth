@@ -27,6 +27,7 @@ export type Options = {
   cookies: {
     secure: boolean,          // Optional. Specifies whether cookies should be set with the secure flag.
     secret: string,           // Required. Specifies the secret to use for signing cookies.
+    domain: string,           // Optional. Specifies the domain to use for setting cookies.
   },
   authEnabled: boolean,       // Optional. Indicates whether authentication is enabled or not.
 }
