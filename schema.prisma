@@ -27,19 +27,19 @@ model device {
   p256dh          String
   auth            String
   userId          Int @map("user_id")
-  user            user @relation(fields: [userId], references: [id])
+  user            user @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model auth {
   token           String @id
   userId          Int @unique @map("user_id")
-  user            user @relation(fields: [userId], references: [id])
+  user            user @relation(fields: [userId], references: [id], onDelete: Cascade)
   dateCreated     DateTime? @default(now()) @map("date_created")
 }
 
 model reset {
   token           String @id
   userId          Int @map("user_id") @unique
-  user            user @relation(fields: [userId], references: [id])
+  user            user @relation(fields: [userId], references: [id], onDelete: Cascade)
   dateCreated     DateTime? @default(now()) @map("date_created")
 }
