@@ -39,9 +39,6 @@ export default fastifyPlugin((app, options) => __awaiter(void 0, void 0, void 0,
     const getCurrentUser = (token) => __awaiter(void 0, void 0, void 0, function* () { var _a; return (_a = (yield prisma.auth.findFirst({ where: { token }, include: { user: true } }))) === null || _a === void 0 ? void 0 : _a.user; });
     const authorize = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let user;
-        if (!options.authEnabled) {
-            user = yield prisma.user.findFirst({ where: { isTester: true } });
-        }
         if (request.cookies.access_token) {
             const token = request.unsignCookie(request.cookies.access_token).value;
             user = token ? yield getCurrentUser(token.substring(token.indexOf(' ') + 1)) : null;

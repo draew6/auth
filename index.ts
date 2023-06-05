@@ -39,9 +39,6 @@ export default fastifyPlugin(async (app: FastifyInstance, options: Options) => {
 
     const authorize = async (request: FastifyRequestWithUser, reply: FastifyReply) => {
         let user: User | null | undefined
-        if (!options.authEnabled) {
-            user = await prisma.user.findFirst({ where: { isTester: true } })
-        }
         if (request.cookies.access_token) {
             const token = request.unsignCookie(request.cookies.access_token).value
             user = token ? await getCurrentUser(token.substring(token.indexOf(' ') + 1)) : null
