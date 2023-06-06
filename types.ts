@@ -16,6 +16,7 @@ export type Options = {
         }
       },    // Required. Specifies the schema for the register route.
     },
+    disabled: boolean,         // Optional. Indicates whether the register route is enabled or not.
     create: (request: FastifyRequest) => {}
   },
   resetPassword: {

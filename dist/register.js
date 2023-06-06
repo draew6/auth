@@ -54,6 +54,7 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
         }
     };
     app.post("/register", {
+        preHandler: options.register.disabled ? app.authorizeAdmin : () => { },
         schema
     }, (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const body = request.body;

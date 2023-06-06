@@ -66,6 +66,7 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
     } as FastifySwaggerSchema
 
     app.post("/register", {
+        preHandler: options.register.disabled ? app.authorizeAdmin : () => { },
         schema
     },
         async (request: FastifyRequestWithUser, reply: FastifyReply): Promise<SuccessResponse> => {
