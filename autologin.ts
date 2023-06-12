@@ -45,7 +45,7 @@ type Body = FromSchema<typeof pwaNotificationsSchema.body>
 type SuccessResponse = FromSchema<typeof successResponse>
 
 export default async (app: FastifyInstanceWithHooks, options: Options) => {
-    const { pwaEnabled, prisma } = options
+    const { pwaEnabled, prisma, cookies } = options
     app.post("/autologin", {
         preHandler: app.authorize,
         schema: {
@@ -62,6 +62,18 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
     },
         async (request: FastifyRequestWithUser, reply: FastifyReply): Promise<SuccessResponse> => {
             const user = request.user as User
+            if (request.authToken) {
+                reply.setCookie("access_token", request.authToken, {
+                    path: "/",
+                    httpOnly: true,
+                    secure: cookies.secure,
+                    sameSite: "none",
+                    maxAge: 60 * 60 * 24 * 360,
+                    signed: true,
+                    domain: cookies.domain
+                })
+            }
+
             if (pwaEnabled) {
                 const { endpoint, p256dh, auth } = request.body as Body
                 const device = await prisma.device.findFirst({

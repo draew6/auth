@@ -44,7 +44,7 @@ const successResponse = {
     required: ["user", "id"]
 };
 export default (app, options) => __awaiter(void 0, void 0, void 0, function* () {
-    const { pwaEnabled, prisma } = options;
+    const { pwaEnabled, prisma, cookies } = options;
     app.post("/autologin", {
         preHandler: app.authorize,
         schema: Object.assign(Object.assign({ summary: "Verify Auth Token" + (pwaEnabled ? "and " + pwaNotificationsSchema.summary : ""), description: "Send auth token in Authorization header to verify if its valid and get username and userid. " +
@@ -53,6 +53,17 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
             } }),
     }, (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const user = request.user;
+        if (request.authToken) {
+            reply.setCookie("access_token", request.authToken, {
+                path: "/",
+                httpOnly: true,
+                secure: cookies.secure,
+                sameSite: "none",
+                maxAge: 60 * 60 * 24 * 360,
+                signed: true,
+                domain: cookies.domain
+            });
+        }
         if (pwaEnabled) {
             const { endpoint, p256dh, auth } = request.body;
             const device = yield prisma.device.findFirst({

@@ -42,6 +42,7 @@ export default fastifyPlugin(async (app: FastifyInstance, options: Options) => {
         if (request.cookies.access_token) {
             const token = request.unsignCookie(request.cookies.access_token).value
             user = token ? await getCurrentUser(token.substring(token.indexOf(' ') + 1)) : null
+            request.authToken = token || undefined
         }
         if (!user) {
             return reply.status(401).send({})

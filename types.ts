@@ -34,6 +34,7 @@ export type Options = {
 
 export type FastifyRequestWithUser = FastifyRequest & {
   user?: User
+  authToken?: string
 }
 
 export interface FastifyInstanceWithHooks extends FastifyInstance {
