@@ -42,6 +42,7 @@ export interface FastifyInstanceWithHooks extends FastifyInstance {
   getPasswordHash: (newPassword: string) => string,
   authorize: () => void,
   authorizeAdmin: () => void,
+  optionalAuthorize: () => void,
   createAccessToken: (userId: number) => string,
 }
 

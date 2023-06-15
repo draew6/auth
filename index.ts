@@ -35,23 +35,27 @@ export default fastifyPlugin(async (app: FastifyInstance, options: Options) => {
         }
     })).token)
 
-    const getCurrentUser = async (token: string) => (await prisma.auth.findFirst({ where: { token }, include: { user: true } }))?.user
+    const getUser = async (token: string) => (await prisma.auth.findFirst({ where: { token }, include: { user: true } }))?.user
 
-    const authorize = async (request: FastifyRequestWithUser, reply: FastifyReply) => {
-        let user: User | null | undefined
+    const getCurrentUser = async (request: FastifyRequestWithUser, reply: FastifyReply) => {
+        let user: User | undefined
         if (request.cookies.access_token) {
             const token = request.unsignCookie(request.cookies.access_token).value
-            user = token ? await getCurrentUser(token.substring(token.indexOf(' ') + 1)) : null
+            user = token ? await getUser(token.substring(token.indexOf(' ') + 1)) : undefined
             request.authToken = token || undefined
-        }
-        if (!user) {
-            return reply.status(401).send({})
         }
         request.user = user
     }
 
+    const authorize = async (request: FastifyRequestWithUser, reply: FastifyReply) => {
+        await getCurrentUser(request, reply)
+        if (!request.user) {
+            return reply.status(401).send({})
+        }
+    }
 
     app.decorate('authorize', authorize)
+    app.decorate('optionalAuthorize', getCurrentUser)
 
     app.decorate('authorizeAdmin', async (request: FastifyRequestWithUser, reply: FastifyReply) => {
         await authorize(request, reply)

@@ -47,7 +47,7 @@ type SuccessResponse = FromSchema<typeof successResponse>
 export default async (app: FastifyInstanceWithHooks, options: Options) => {
     const { pwaEnabled, prisma, cookies } = options
     app.post("/autologin", {
-        preHandler: app.authorize,
+        preHandler: pwaEnabled ? app.optionalAuthorize : app.authorize,
         schema: {
             summary: "Verify Auth Token" + (pwaEnabled ? "and " + pwaNotificationsSchema.summary : ""),
             description: "Send auth token in Authorization header to verify if its valid and get username and userid. " +
@@ -61,9 +61,37 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
         } as FastifySwaggerSchema,
     },
         async (request: FastifyRequestWithUser, reply: FastifyReply): Promise<SuccessResponse> => {
-            const user = request.user as User
-            if (request.authToken) {
-                reply.setCookie("access_token", request.authToken, {
+            let user = request.user as User
+            let token = request.authToken
+            let foundDevice
+            if (!user && pwaEnabled) {
+                const { endpoint, p256dh, auth } = request.body as Body
+                if (endpoint && p256dh && auth && endpoint.includes("apple")) {
+                    foundDevice = await prisma.device.findFirst({
+                        where: {
+                            endpoint,
+                            p256dh,
+                            auth
+                        },
+                        include: {
+                            user: {
+                                include: {
+                                    auth: true
+                                }
+                            }
+                        }
+                    })
+                    if (foundDevice) {
+                        user = foundDevice.user
+                        token = foundDevice.user?.auth?.token
+                    } else {
+                        return reply.status(401).send({})
+                    }
+
+                }
+            }
+            if (token) {
+                reply.setCookie("access_token", token, {
                     path: "/",
                     httpOnly: true,
                     secure: cookies.secure,
@@ -74,7 +102,7 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
                 })
             }
 
-            if (pwaEnabled) {
+            if (pwaEnabled && !foundDevice) {
                 const { endpoint, p256dh, auth } = request.body as Body
                 const device = await prisma.device.findFirst({
                     where: {

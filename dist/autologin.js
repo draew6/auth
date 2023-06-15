@@ -46,15 +46,44 @@ const successResponse = {
 export default (app, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { pwaEnabled, prisma, cookies } = options;
     app.post("/autologin", {
-        preHandler: app.authorize,
+        preHandler: pwaEnabled ? app.optionalAuthorize : app.authorize,
         schema: Object.assign(Object.assign({ summary: "Verify Auth Token" + (pwaEnabled ? "and " + pwaNotificationsSchema.summary : ""), description: "Send auth token in Authorization header to verify if its valid and get username and userid. " +
                 (pwaEnabled ? pwaNotificationsSchema.description : ""), tags: ["user"], security: [{ oauth: [] }] }, (pwaEnabled ? { body: pwaNotificationsSchema.body } : {})), { response: {
                 200: successResponse
             } }),
     }, (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
-        const user = request.user;
-        if (request.authToken) {
-            reply.setCookie("access_token", request.authToken, {
+        var _a, _b;
+        let user = request.user;
+        let token = request.authToken;
+        let foundDevice;
+        if (!user && pwaEnabled) {
+            const { endpoint, p256dh, auth } = request.body;
+            if (endpoint && p256dh && auth && endpoint.includes("apple")) {
+                foundDevice = yield prisma.device.findFirst({
+                    where: {
+                        endpoint,
+                        p256dh,
+                        auth
+                    },
+                    include: {
+                        user: {
+                            include: {
+                                auth: true
+                            }
+                        }
+                    }
+                });
+                if (foundDevice) {
+                    user = foundDevice.user;
+                    token = (_b = (_a = foundDevice.user) === null || _a === void 0 ? void 0 : _a.auth) === null || _b === void 0 ? void 0 : _b.token;
+                }
+                else {
+                    return reply.status(401).send({});
+                }
+            }
+        }
+        if (token) {
+            reply.setCookie("access_token", token, {
                 path: "/",
                 httpOnly: true,
                 secure: cookies.secure,
@@ -64,7 +93,7 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
                 domain: cookies.domain
             });
         }
-        if (pwaEnabled) {
+        if (pwaEnabled && !foundDevice) {
             const { endpoint, p256dh, auth } = request.body;
             const device = yield prisma.device.findFirst({
                 where: {

@@ -36,20 +36,24 @@ export default fastifyPlugin((app, options) => __awaiter(void 0, void 0, void 0,
             }
         })).token;
     }));
-    const getCurrentUser = (token) => __awaiter(void 0, void 0, void 0, function* () { var _a; return (_a = (yield prisma.auth.findFirst({ where: { token }, include: { user: true } }))) === null || _a === void 0 ? void 0 : _a.user; });
-    const authorize = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    const getUser = (token) => __awaiter(void 0, void 0, void 0, function* () { var _a; return (_a = (yield prisma.auth.findFirst({ where: { token }, include: { user: true } }))) === null || _a === void 0 ? void 0 : _a.user; });
+    const getCurrentUser = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let user;
         if (request.cookies.access_token) {
             const token = request.unsignCookie(request.cookies.access_token).value;
-            user = token ? yield getCurrentUser(token.substring(token.indexOf(' ') + 1)) : null;
+            user = token ? yield getUser(token.substring(token.indexOf(' ') + 1)) : undefined;
             request.authToken = token || undefined;
-        }
-        if (!user) {
-            return reply.status(401).send({});
         }
         request.user = user;
     });
+    const authorize = (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
+        yield getCurrentUser(request, reply);
+        if (!request.user) {
+            return reply.status(401).send({});
+        }
+    });
     app.decorate('authorize', authorize);
+    app.decorate('optionalAuthorize', getCurrentUser);
     app.decorate('authorizeAdmin', (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
         var _b;
         yield authorize(request, reply);
