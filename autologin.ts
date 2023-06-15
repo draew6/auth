@@ -84,10 +84,11 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
                     if (foundDevice) {
                         user = foundDevice.user
                         token = foundDevice.user?.auth?.token
-                    } else {
-                        return reply.status(401).send({})
                     }
 
+                }
+                if (!user) {
+                    return reply.status(401).send({})
                 }
             }
             if (token) {

@@ -77,9 +77,9 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
                     user = foundDevice.user;
                     token = (_b = (_a = foundDevice.user) === null || _a === void 0 ? void 0 : _a.auth) === null || _b === void 0 ? void 0 : _b.token;
                 }
-                else {
-                    return reply.status(401).send({});
-                }
+            }
+            if (!user) {
+                return reply.status(401).send({});
             }
         }
         if (token) {
