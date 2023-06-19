@@ -72,7 +72,7 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
                 data: Object.assign({ displayname: username, username: username.toLowerCase(), mail: mail.toLowerCase(), password: yield app.getPasswordHash(password), dateJoined: new Date().toISOString(), isAdmin: false }, register.create(request))
             });
             const token = yield app.createAccessToken(user.id);
-            if (options.register.disabled) {
+            if (!options.register.disabled) {
                 reply.setCookie("access_token", token, {
                     path: "/",
                     httpOnly: true,
