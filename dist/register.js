@@ -72,15 +72,17 @@ export default (app, options) => __awaiter(void 0, void 0, void 0, function* () 
                 data: Object.assign({ displayname: username, username: username.toLowerCase(), mail: mail.toLowerCase(), password: yield app.getPasswordHash(password), dateJoined: new Date().toISOString(), isAdmin: false }, register.create(request))
             });
             const token = yield app.createAccessToken(user.id);
-            reply.setCookie("access_token", token, {
-                path: "/",
-                httpOnly: true,
-                secure: cookies.secure,
-                sameSite: "none",
-                maxAge: 60 * 60 * 24 * 360,
-                signed: true,
-                domain: cookies.domain
-            });
+            if (options.register.disabled) {
+                reply.setCookie("access_token", token, {
+                    path: "/",
+                    httpOnly: true,
+                    secure: cookies.secure,
+                    sameSite: "none",
+                    maxAge: 60 * 60 * 24 * 360,
+                    signed: true,
+                    domain: cookies.domain
+                });
+            }
             return { token, userId: user.id };
         }
         catch (error) {
