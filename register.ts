@@ -93,15 +93,17 @@ export default async (app: FastifyInstanceWithHooks, options: Options) => {
                     } as any
                 }) as any
                 const token = await app.createAccessToken(user.id)
-                reply.setCookie("access_token", token, {
-                    path: "/",
-                    httpOnly: true,
-                    secure: cookies.secure,
-                    sameSite: "none",
-                    maxAge: 60 * 60 * 24 * 360,
-                    signed: true,
-                    domain: cookies.domain
-                })
+                if (options.register.disabled) {
+                    reply.setCookie("access_token", token, {
+                        path: "/",
+                        httpOnly: true,
+                        secure: cookies.secure,
+                        sameSite: "none",
+                        maxAge: 60 * 60 * 24 * 360,
+                        signed: true,
+                        domain: cookies.domain
+                    })
+                }
                 return { token, userId: user.id }
             }
             catch (error) {
