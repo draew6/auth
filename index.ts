@@ -1,3 +1,4 @@
+// @ts-ignore
 import bcrypt from 'bcrypt'
 import crypto from "crypto"
 import cookie from '@fastify/cookie'
